@@ -10,7 +10,7 @@ class WhisperStream : public QObject
 {
     Q_OBJECT
 public:
-    explicit WhisperStream(QObject *parent = nullptr);
+    explicit WhisperStream(const QStringList& args, QObject *parent = nullptr);
     ~WhisperStream();
 
     void startWhisper();
@@ -21,6 +21,8 @@ public:
 signals:
     void sendMessage(QString msg);
 
+    void sendSound(const QByteArray& data);
+
 public slots:
 
 
@@ -30,6 +32,9 @@ private:
     bool mDone = false;
     QString mModel = "models/ggml-small.bin";
     QString mLng = "ru";
+    std::vector<std::string> mArgs;
+
+    QByteArray mSoundBuf;
 
     void work();
 

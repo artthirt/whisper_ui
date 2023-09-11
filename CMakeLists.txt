@@ -60,6 +60,7 @@ set(SRC
     whisperstream.h
     whisperstream.cpp
     WContainer.h WContainer.cpp
+    PaintSpectrum.h PaintSpectrum.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC})

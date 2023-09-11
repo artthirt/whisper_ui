@@ -28,6 +28,11 @@ private:
     Ui::MainWindow *ui;
 
     QScopedPointer<WhisperStream> mWhisper;
+
+    void keyControl(int key);
+    // QObject interface
+public:
+    bool eventFilter(QObject *watched, QEvent *event);
 };
 
 #endif // MAINWINDOW_H

@@ -121,9 +121,13 @@ bool whisper_params_parse(int argc, char ** argv, whisper_params & params) {
 
 ///////////////////////////////////
 
-WhisperStream::WhisperStream(QObject *parent)
+WhisperStream::WhisperStream(const QStringList &args, QObject *parent)
     : QObject{parent}
 {
+    for(int i = 0; i < args.size(); ++i){
+        mArgs.push_back(args[i].toLocal8Bit().data());
+    }
+
     mQThr.reset(new QThread);
     mQThr->setObjectName("WhisperThread");
     mQThr->moveToThread(mQThr.get());
@@ -184,14 +188,19 @@ void WhisperStream::work()
     memcpy(lng, mLng.toUtf8().data(), mLng.toUtf8().size() + 1);
     memcpy(mdl, mModel.toUtf8().data(), mModel.toUtf8().size() + 1);
 
-    const char *argv[] = {
-      "app",
-      "-l", lng,
-      "-m", mdl,
-    };
-    int argc = sizeof(argv) / sizeof(*argv) - 1;
+//    const char *argv[] = {
+//      "app",
+//      "-l", lng,
+//      "-m", mdl,
+//    };
+//    int argc = sizeof(argv) / sizeof(*argv) - 1;
+    int argc = mArgs.size();
+    std::vector<const char*> argv;
+    for(const auto &it: mArgs){
+        argv.push_back(it.c_str());
+    }
 
-    if (whisper_params_parse(argc, (char**)argv, params) == false) {
+    if (whisper_params_parse(argc, (char**)argv.data(), params) == false) {
         return;
     }
 
@@ -225,7 +234,7 @@ void WhisperStream::work()
 
     if (params.language != "auto" && whisper_lang_id(params.language.c_str()) == -1){
         fprintf(stderr, "error: unknown language '%s'\n", params.language.c_str());
-        whisper_print_usage(argc, (char**)argv, params);
+        whisper_print_usage(argc, (char**)argv.data(), params);
         exit(0);
     }
 
@@ -388,6 +397,10 @@ void WhisperStream::work()
                 fprintf(stderr, "%s: failed to process audio\n", argv[0]);
                 return;
             }
+
+            mSoundBuf.resize(pcmf32.size() * 4);
+            memcpy(mSoundBuf.data(), pcmf32.data(), mSoundBuf.size());
+            emit sendSound(mSoundBuf);
 
             // print result;
             {
