@@ -59,6 +59,7 @@ set(SRC
     mainwindow.ui
     whisperstream.h
     whisperstream.cpp
+    WContainer.h WContainer.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC})
