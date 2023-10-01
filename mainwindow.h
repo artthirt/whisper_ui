@@ -17,6 +17,9 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void loadSettings();
+    void saveSettings();
+
 private slots:
     void on_pbStart_clicked();
 
@@ -24,9 +27,11 @@ private slots:
 
     void onSendMessage(QString msg);
 
+    void on_tbModel_clicked();
+
 private:
     Ui::MainWindow *ui;
-
+    QString mModelFile;
     QScopedPointer<WhisperStream> mWhisper;
 
     void keyControl(int key);

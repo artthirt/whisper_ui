@@ -16,41 +16,186 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QLineEdit" name="leArgs">
-      <property name="text">
-       <string>-l ru -m models/ggml-medium.bin -c 2</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QPlainTextEdit" name="teLog"/>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QGridLayout" name="gridLayout">
       <property name="topMargin">
        <number>0</number>
       </property>
-      <item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="leModel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="cbAudioInput"/>
+      </item>
+      <item row="3" column="0">
        <widget class="QPushButton" name="pbStart">
         <property name="text">
          <string>Start</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Select Model</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
        <widget class="QPushButton" name="pbFocus">
         <property name="text">
          <string>Focus Control</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Language</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="cbLng">
+        <item><property name="text"><string>auto</string></property></item>
+        <item><property name="text"><string>en</string></property></item>
+        <item><property name="text"><string>zh</string></property></item>
+        <item><property name="text"><string>de</string></property></item>
+        <item><property name="text"><string>es</string></property></item>
+        <item><property name="text"><string>ru</string></property></item>
+        <item><property name="text"><string>ko</string></property></item>
+        <item><property name="text"><string>fr</string></property></item>
+        <item><property name="text"><string>ja</string></property></item>
+        <item><property name="text"><string>pt</string></property></item>
+        <item><property name="text"><string>tr</string></property></item>
+        <item><property name="text"><string>pl</string></property></item>
+        <item><property name="text"><string>ca</string></property></item>
+        <item><property name="text"><string>nl</string></property></item>
+        <item><property name="text"><string>ar</string></property></item>
+        <item><property name="text"><string>sv</string></property></item>
+        <item><property name="text"><string>it</string></property></item>
+        <item><property name="text"><string>id</string></property></item>
+        <item><property name="text"><string>hi</string></property></item>
+        <item><property name="text"><string>fi</string></property></item>
+        <item><property name="text"><string>vi</string></property></item>
+        <item><property name="text"><string>he</string></property></item>
+        <item><property name="text"><string>uk</string></property></item>
+        <item><property name="text"><string>el</string></property></item>
+        <item><property name="text"><string>ms</string></property></item>
+        <item><property name="text"><string>cs</string></property></item>
+        <item><property name="text"><string>ro</string></property></item>
+        <item><property name="text"><string>da</string></property></item>
+        <item><property name="text"><string>hu</string></property></item>
+        <item><property name="text"><string>ta</string></property></item>
+        <item><property name="text"><string>no</string></property></item>
+        <item><property name="text"><string>th</string></property></item>
+        <item><property name="text"><string>ur</string></property></item>
+        <item><property name="text"><string>hr</string></property></item>
+        <item><property name="text"><string>bg</string></property></item>
+        <item><property name="text"><string>lt</string></property></item>
+        <item><property name="text"><string>la</string></property></item>
+        <item><property name="text"><string>mi</string></property></item>
+        <item><property name="text"><string>ml</string></property></item>
+        <item><property name="text"><string>cy</string></property></item>
+        <item><property name="text"><string>sk</string></property></item>
+        <item><property name="text"><string>te</string></property></item>
+        <item><property name="text"><string>fa</string></property></item>
+        <item><property name="text"><string>lv</string></property></item>
+        <item><property name="text"><string>bn</string></property></item>
+        <item><property name="text"><string>sr</string></property></item>
+        <item><property name="text"><string>az</string></property></item>
+        <item><property name="text"><string>sl</string></property></item>
+        <item><property name="text"><string>kn</string></property></item>
+        <item><property name="text"><string>et</string></property></item>
+        <item><property name="text"><string>mk</string></property></item>
+        <item><property name="text"><string>br</string></property></item>
+        <item><property name="text"><string>eu</string></property></item>
+        <item><property name="text"><string>is</string></property></item>
+        <item><property name="text"><string>hy</string></property></item>
+        <item><property name="text"><string>ne</string></property></item>
+        <item><property name="text"><string>mn</string></property></item>
+        <item><property name="text"><string>bs</string></property></item>
+        <item><property name="text"><string>kk</string></property></item>
+        <item><property name="text"><string>sq</string></property></item>
+        <item><property name="text"><string>sw</string></property></item>
+        <item><property name="text"><string>gl</string></property></item>
+        <item><property name="text"><string>mr</string></property></item>
+        <item><property name="text"><string>pa</string></property></item>
+        <item><property name="text"><string>si</string></property></item>
+        <item><property name="text"><string>km</string></property></item>
+        <item><property name="text"><string>sn</string></property></item>
+        <item><property name="text"><string>yo</string></property></item>
+        <item><property name="text"><string>so</string></property></item>
+        <item><property name="text"><string>af</string></property></item>
+        <item><property name="text"><string>oc</string></property></item>
+        <item><property name="text"><string>ka</string></property></item>
+        <item><property name="text"><string>be</string></property></item>
+        <item><property name="text"><string>tg</string></property></item>
+        <item><property name="text"><string>sd</string></property></item>
+        <item><property name="text"><string>gu</string></property></item>
+        <item><property name="text"><string>am</string></property></item>
+        <item><property name="text"><string>yi</string></property></item>
+        <item><property name="text"><string>lo</string></property></item>
+        <item><property name="text"><string>uz</string></property></item>
+        <item><property name="text"><string>fo</string></property></item>
+        <item><property name="text"><string>ht</string></property></item>
+        <item><property name="text"><string>ps</string></property></item>
+        <item><property name="text"><string>tk</string></property></item>
+        <item><property name="text"><string>nn</string></property></item>
+        <item><property name="text"><string>mt</string></property></item>
+        <item><property name="text"><string>sa</string></property></item>
+        <item><property name="text"><string>lb</string></property></item>
+        <item><property name="text"><string>my</string></property></item>
+        <item><property name="text"><string>bo</string></property></item>
+        <item><property name="text"><string>tl</string></property></item>
+        <item><property name="text"><string>mg</string></property></item>
+        <item><property name="text"><string>as</string></property></item>
+        <item><property name="text"><string>tt</string></property></item>
+        <item><property name="text"><string>ha</string></property></item>
+        <item><property name="text"><string>ln</string></property></item>
+        <item><property name="text"><string>ha</string></property></item>
+        <item><property name="text"><string>ba</string></property></item>
+        <item><property name="text"><string>jw</string></property></item>
+        <item><property name="text"><string>su</string></property></item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Audio Input</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
        <widget class="QPushButton" name="pbStop">
         <property name="text">
          <string>Stop</string>
         </property>
        </widget>
       </item>
+      <item row="0" column="2">
+       <widget class="QToolButton" name="tbModel">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
      </layout>
     </item>
    </layout>
@@ -61,7 +206,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

@@ -18,6 +18,8 @@ public:
 
     void printf(const char *fmt, ...);
 
+    static QStringList getAudioSources();
+
 signals:
     void sendMessage(QString msg);
 

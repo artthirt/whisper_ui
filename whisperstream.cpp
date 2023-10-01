@@ -18,7 +18,7 @@
 struct whisper_params {
     int32_t n_threads  = std::min(4, (int32_t) std::thread::hardware_concurrency());
     int32_t step_ms    = 3000;
-    int32_t length_ms  = 10000;
+    int32_t length_ms  = 5000;
     int32_t keep_ms    = 200;
     int32_t capture_id = -1;
     int32_t max_tokens = 32;
@@ -179,14 +179,35 @@ void WhisperStream::printf(const char *fmt, ...)
     emit sendMessage(msg);
 }
 
+QStringList WhisperStream::getAudioSources()
+{
+    QStringList ret;
+
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        return {};
+    }
+
+    SDL_SetHintWithPriority(SDL_HINT_AUDIO_RESAMPLING_MODE, "medium", SDL_HINT_OVERRIDE);
+
+    {
+        int nDevices = SDL_GetNumAudioDevices(SDL_TRUE);
+        fprintf(stderr, "%s: found %d capture devices:\n", __func__, nDevices);
+        for (int i = 0; i < nDevices; i++) {
+            QString ad = SDL_GetAudioDeviceName(i, SDL_TRUE);
+            fprintf(stderr, "%s:    - Capture device #%d: '%s'\n", __func__, i, ad.toLocal8Bit().data());
+            ret << ad;
+        }
+    }
+
+    return ret;
+}
+
 void WhisperStream::work()
 {
     whisper_params params;
-
-    char lng[10]; //= mLng.toUtf8().data();
-    char mdl[1024]; //= mModel.toUtf8().data();
-    memcpy(lng, mLng.toUtf8().data(), mLng.toUtf8().size() + 1);
-    memcpy(mdl, mModel.toUtf8().data(), mModel.toUtf8().size() + 1);
 
 //    const char *argv[] = {
 //      "app",

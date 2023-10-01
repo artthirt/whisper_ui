@@ -11,6 +11,8 @@
 #include <QImage>
 #include <QPainter>
 #include <QPen>
+#include <QFileDialog>
+#include <QSettings>
 
 #include <Windows.h>
 
@@ -42,20 +44,52 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pbFocus->setStyleSheet("QPushButton{border: 0;background-color:white;height: 30px;width 40px;}"
                                "QPushButton:focus{border: 2px dotted #444;}");
     ui->pbFocus->installEventFilter(this);
+
+    auto ads = WhisperStream::getAudioSources();
+    for(auto s: ads){
+        ui->cbAudioInput->addItem(s);
+    }
+    loadSettings();
 }
 
 MainWindow::~MainWindow()
 {
+    saveSettings();
     delete ui;
+}
+
+void MainWindow::loadSettings()
+{
+    QSettings sett("sett.ini", QSettings::Format::IniFormat);
+    mModelFile = sett.value("model").toString();
+    ui->leModel->setText(sett.value("model").toString());
+    ui->cbAudioInput->setCurrentIndex(sett.value("audio").toInt());
+    ui->cbLng->setCurrentIndex(sett.value("lng").toInt());
+}
+
+void MainWindow::saveSettings()
+{
+    QSettings sett("sett.ini", QSettings::Format::IniFormat);
+    sett.setValue("model", ui->leModel->text());
+    sett.setValue("audio", ui->cbAudioInput->currentIndex());
+    sett.setValue("lng", ui->cbLng->currentIndex());
 }
 
 void MainWindow::on_pbStart_clicked()
 {
-    auto args = ui->leArgs->text().split(' ');
-    for(auto &it: args){
-        it = it.trimmed();
+    if(mModelFile.isEmpty()){
+        ui->teLog->appendHtml("<b>Model is not select. Not Started</b>");
+        return;
     }
+//    auto args = ui->leArgs->text().split(' ');
+//    for(auto &it: args){
+//        it = it.trimmed();
+//    }
+    QStringList args;
     args.push_front("app");
+    args << "-l" << ui->cbLng->currentText();
+    args << "-c" << QString::number(ui->cbAudioInput->currentIndex());
+    args << "-m" << mModelFile;
     mWhisper.reset(new WhisperStream(args));
     connect(mWhisper.get(), &WhisperStream::sendMessage, this, &MainWindow::onSendMessage, Qt::QueuedConnection);
     connect(mWhisper.get(), &WhisperStream::sendSound, ui->widgetSound, &PaintSpectrum::onRecvData, Qt::QueuedConnection);
@@ -158,3 +192,13 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     }
     return QMainWindow::eventFilter(watched, event);
 }
+
+void MainWindow::on_tbModel_clicked()
+{
+    QString fn = QFileDialog::getOpenFileName(nullptr, "Open File", "", "*.bin");
+    if(!fn.isEmpty()){
+        mModelFile = fn;
+        ui->leModel->setText(mModelFile);
+    }
+}
+
