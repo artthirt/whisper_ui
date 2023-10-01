@@ -18,21 +18,21 @@
 struct whisper_params {
     int32_t n_threads  = std::min(4, (int32_t) std::thread::hardware_concurrency());
     int32_t step_ms    = 3000;
-    int32_t length_ms  = 5000;
+    int32_t length_ms  = 8000;
     int32_t keep_ms    = 200;
     int32_t capture_id = -1;
     int32_t max_tokens = 32;
     int32_t audio_ctx  = 0;
 
-    float vad_thold    = 0.6f;
+    float vad_thold    = 1.6f;
     float freq_thold   = 100.0f;
 
     bool speed_up      = false;
     bool translate     = false;
     bool no_fallback   = false;
     bool print_special = false;
-    bool no_context    = true;
-    bool no_timestamps = false;
+    bool no_context    = false;
+    bool no_timestamps = true;
     bool tinydiarize   = false;
 
     std::string language  = "en";
@@ -117,6 +117,60 @@ bool whisper_params_parse(int argc, char ** argv, whisper_params & params) {
     }
 
     return true;
+}
+
+std::string transcribe(whisper_context * ctx, const whisper_params & params, const std::vector<float> & pcmf32, float & prob, int64_t & t_ms) {
+    const auto t_start = std::chrono::high_resolution_clock::now();
+
+    prob = 0.0f;
+    t_ms = 0;
+
+    whisper_full_params wparams = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
+
+    wparams.print_progress   = false;
+    wparams.print_special    = params.print_special;
+    wparams.print_realtime   = false;
+    wparams.print_timestamps = !params.no_timestamps;
+    wparams.translate        = params.translate;
+    wparams.no_context       = true;
+    wparams.single_segment   = true;
+    wparams.max_tokens       = params.max_tokens;
+    wparams.language         = params.language.c_str();
+    wparams.n_threads        = params.n_threads;
+
+    wparams.audio_ctx        = params.audio_ctx;
+    wparams.speed_up         = params.speed_up;
+
+    if (whisper_full(ctx, wparams, pcmf32.data(), pcmf32.size()) != 0) {
+        return "";
+    }
+
+    int prob_n = 0;
+    std::string result;
+
+    const int n_segments = whisper_full_n_segments(ctx);
+    for (int i = 0; i < n_segments; ++i) {
+        const char * text = whisper_full_get_segment_text(ctx, i);
+
+        result += text;
+
+        const int n_tokens = whisper_full_n_tokens(ctx, i);
+        for (int j = 0; j < n_tokens; ++j) {
+            const auto token = whisper_full_get_token_data(ctx, i, j);
+
+            prob += token.p;
+            ++prob_n;
+        }
+    }
+
+    if (prob_n > 0) {
+        prob /= prob_n;
+    }
+
+    const auto t_end = std::chrono::high_resolution_clock::now();
+    t_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
+
+    return result;
 }
 
 ///////////////////////////////////

@@ -15,19 +15,34 @@ set(SRC
     ggml-cuda.cu
     ggml.h
     ggml-cuda.h
-    ggml-metal.h
-    ggml-opencl.h
+    #ggml-opencl.cpp
+    #ggml-opencl.h
     whisper.h
 
 )
 
+set(DEFINES)
+
 if(BUILD_SHARED_LIBS)
     add_library(whisper SHARED ${SRC})
-    target_compile_definitions(whisper PRIVATE WHISPER_SHARED WHISPER_BUILD GGML_SHARED GGML_BUILD GGML_USE_CUBLAS)
+    set(DEFINES
+        ${DEFINES}
+        WHISPER_SHARED
+        WHISPER_BUILD
+        GGML_SHARED
+        GGML_BUILD
+    )
 else()
     add_library(whisper ${SRC})
 endif()
 add_library(whisper::whisper ALIAS whisper)
+
+target_compile_definitions(whisper PRIVATE
+    ${DEFINES}
+    GGML_USE_CUBLAS
+    #GGML_USE_CLBLAST
+)
+
 
 target_include_directories(whisper PUBLIC
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
