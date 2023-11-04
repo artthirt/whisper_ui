@@ -12,13 +12,18 @@ set(SRC
     ggml.c
     #ggml-opencl.cpp
     whisper.cpp
+    whisper.h
+    ggml-alloc.c
+    ggml-alloc.h
+    ggml-backend.c
+    ggml-backend.h
     ggml-cuda.cu
     ggml.h
     ggml-cuda.h
+    ggml-quants.c
+    ggml-quants.h
     #ggml-opencl.cpp
     #ggml-opencl.h
-    whisper.h
-
 )
 
 set(DEFINES)
