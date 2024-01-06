@@ -55,7 +55,7 @@ target_include_directories(whisper PUBLIC
 )
 
 target_link_libraries(whisper PRIVATE
-    CUDA::cudart CUDA::cublas CUDA::cublasLt
+    CUDA::cudart CUDA::cublas CUDA::cublasLt cuda
 )
 
 #install(
