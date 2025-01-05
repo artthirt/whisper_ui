@@ -1,5 +1,7 @@
 #include "common-sdl.h"
 
+#include <cstdio>
+
 audio_async::audio_async(int len_ms) {
     m_len_ms = len_ms;
 
@@ -139,10 +141,13 @@ void audio_async::callback(uint8_t * stream, int len) {
         return;
     }
 
-    const size_t n_samples = len / sizeof(float);
+    size_t n_samples = len / sizeof(float);
 
-    m_audio_new.resize(n_samples);
-    memcpy(m_audio_new.data(), stream, n_samples * sizeof(float));
+    if (n_samples > m_audio.size()) {
+        n_samples = m_audio.size();
+
+        stream += (len - (n_samples * sizeof(float)));
+    }
 
     //fprintf(stderr, "%s: %zu samples, pos %zu, len %zu\n", __func__, n_samples, m_audio_pos, m_audio_len);
 
@@ -153,7 +158,7 @@ void audio_async::callback(uint8_t * stream, int len) {
             const size_t n0 = m_audio.size() - m_audio_pos;
 
             memcpy(&m_audio[m_audio_pos], stream, n0 * sizeof(float));
-            memcpy(&m_audio[0], &stream[n0], (n_samples - n0) * sizeof(float));
+            memcpy(&m_audio[0], stream + n0 * sizeof(float), (n_samples - n0) * sizeof(float));
 
             m_audio_pos = (m_audio_pos + n_samples) % m_audio.size();
             m_audio_len = m_audio.size();
@@ -216,7 +221,7 @@ bool sdl_poll_events() {
             case SDL_QUIT:
                 {
                     return false;
-                } break;
+                }
             default:
                 break;
         }

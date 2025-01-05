@@ -40,46 +40,7 @@ struct whisper_params {
     std::string fname_out;
 };
 
-//  500 -> 00:05.000
-// 6000 -> 01:00.000
-std::string to_timestamp(int64_t t) {
-    int64_t sec = t/100;
-    int64_t msec = t - sec*100;
-    int64_t min = sec/60;
-    sec = sec - min*60;
-
-    char buf[32];
-    snprintf(buf, sizeof(buf), "%02d:%02d.%03d", (int) min, (int) sec, (int) msec);
-
-    return std::string(buf);
-}
-
-void whisper_print_usage(int /*argc*/, char ** argv, const whisper_params & params) {
-    fprintf(stderr, "\n");
-    fprintf(stderr, "usage: %s [options]\n", argv[0]);
-    fprintf(stderr, "\n");
-    fprintf(stderr, "options:\n");
-    fprintf(stderr, "  -h,       --help          [default] show this help message and exit\n");
-    fprintf(stderr, "  -t N,     --threads N     [%-7d] number of threads to use during computation\n",    params.n_threads);
-    fprintf(stderr, "            --step N        [%-7d] audio step size in milliseconds\n",                params.step_ms);
-    fprintf(stderr, "            --length N      [%-7d] audio length in milliseconds\n",                   params.length_ms);
-    fprintf(stderr, "            --keep N        [%-7d] audio to keep from previous step in ms\n",         params.keep_ms);
-    fprintf(stderr, "  -c ID,    --capture ID    [%-7d] capture device ID\n",                              params.capture_id);
-    fprintf(stderr, "  -mt N,    --max-tokens N  [%-7d] maximum number of tokens per audio chunk\n",       params.max_tokens);
-    fprintf(stderr, "  -ac N,    --audio-ctx N   [%-7d] audio context size (0 - all)\n",                   params.audio_ctx);
-    fprintf(stderr, "  -vth N,   --vad-thold N   [%-7.2f] voice activity detection threshold\n",           params.vad_thold);
-    fprintf(stderr, "  -fth N,   --freq-thold N  [%-7.2f] high-pass frequency cutoff\n",                   params.freq_thold);
-    fprintf(stderr, "  -su,      --speed-up      [%-7s] speed up audio by x2 (reduced accuracy)\n",        params.speed_up ? "true" : "false");
-    fprintf(stderr, "  -tr,      --translate     [%-7s] translate from source language to english\n",      params.translate ? "true" : "false");
-    fprintf(stderr, "  -nf,      --no-fallback   [%-7s] do not use temperature fallback while decoding\n", params.no_fallback ? "true" : "false");
-    fprintf(stderr, "  -ps,      --print-special [%-7s] print special tokens\n",                           params.print_special ? "true" : "false");
-    fprintf(stderr, "  -kc,      --keep-context  [%-7s] keep context between audio chunks\n",              params.no_context ? "false" : "true");
-    fprintf(stderr, "  -l LANG,  --language LANG [%-7s] spoken language\n",                                params.language.c_str());
-    fprintf(stderr, "  -m FNAME, --model FNAME   [%-7s] model path\n",                                     params.model.c_str());
-    fprintf(stderr, "  -f FNAME, --file FNAME    [%-7s] text output file name\n",                          params.fname_out.c_str());
-    fprintf(stderr, "  -tdrz,     --tinydiarize  [%-7s] enable tinydiarize (requires a tdrz model)\n",     params.tinydiarize ? "true" : "false");
-    fprintf(stderr, "\n");
-}
+void whisper_print_usage(int /*argc*/, char ** argv, const whisper_params & params) {}
 
 bool whisper_params_parse(int argc, char ** argv, whisper_params & params) {
     for (int i = 1; i < argc; i++) {
@@ -117,60 +78,6 @@ bool whisper_params_parse(int argc, char ** argv, whisper_params & params) {
     }
 
     return true;
-}
-
-std::string transcribe(whisper_context * ctx, const whisper_params & params, const std::vector<float> & pcmf32, float & prob, int64_t & t_ms) {
-    const auto t_start = std::chrono::high_resolution_clock::now();
-
-    prob = 0.0f;
-    t_ms = 0;
-
-    whisper_full_params wparams = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
-
-    wparams.print_progress   = false;
-    wparams.print_special    = params.print_special;
-    wparams.print_realtime   = false;
-    wparams.print_timestamps = !params.no_timestamps;
-    wparams.translate        = params.translate;
-    wparams.no_context       = true;
-    wparams.single_segment   = true;
-    wparams.max_tokens       = params.max_tokens;
-    wparams.language         = params.language.c_str();
-    wparams.n_threads        = params.n_threads;
-
-    wparams.audio_ctx        = params.audio_ctx;
-    wparams.speed_up         = params.speed_up;
-
-    if (whisper_full(ctx, wparams, pcmf32.data(), pcmf32.size()) != 0) {
-        return "";
-    }
-
-    int prob_n = 0;
-    std::string result;
-
-    const int n_segments = whisper_full_n_segments(ctx);
-    for (int i = 0; i < n_segments; ++i) {
-        const char * text = whisper_full_get_segment_text(ctx, i);
-
-        result += text;
-
-        const int n_tokens = whisper_full_n_tokens(ctx, i);
-        for (int j = 0; j < n_tokens; ++j) {
-            const auto token = whisper_full_get_token_data(ctx, i, j);
-
-            prob += token.p;
-            ++prob_n;
-        }
-    }
-
-    if (prob_n > 0) {
-        prob /= prob_n;
-    }
-
-    const auto t_end = std::chrono::high_resolution_clock::now();
-    t_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
-
-    return result;
 }
 
 ///////////////////////////////////
@@ -457,7 +364,6 @@ void WhisperStream::work()
             wparams.n_threads        = params.n_threads;
 
             wparams.audio_ctx        = params.audio_ctx;
-            wparams.speed_up         = params.speed_up;
 
             wparams.tdrz_enable      = params.tinydiarize; // [TDRZ]
 
@@ -470,12 +376,8 @@ void WhisperStream::work()
 
             if (whisper_full(ctx, wparams, pcmf32.data(), pcmf32.size()) != 0) {
                 fprintf(stderr, "%s: failed to process audio\n", argv[0]);
-                return;
+                break;
             }
-
-            mSoundBuf.resize(pcmf32.size() * 4);
-            memcpy(mSoundBuf.data(), pcmf32.data(), mSoundBuf.size());
-            emit sendSound(mSoundBuf);
 
             // print result;
             {
@@ -510,7 +412,7 @@ void WhisperStream::work()
                         const int64_t t0 = whisper_full_get_segment_t0(ctx, i);
                         const int64_t t1 = whisper_full_get_segment_t1(ctx, i);
 
-                        std::string output = "[" + to_timestamp(t0) + " --> " + to_timestamp(t1) + "]  " + text;
+                        std::string output = "[" + to_timestamp(t0, false) + " --> " + to_timestamp(t1, false) + "]  " + text;
 
                         if (whisper_full_get_segment_speaker_turn_next(ctx, i)) {
                             output += " [SPEAKER_TURN]";
@@ -531,7 +433,7 @@ void WhisperStream::work()
                     fout << std::endl;
                 }
 
-                if (use_vad){
+                if (use_vad) {
                     printf("\n");
                     printf("### Transcription %d END\n", n_iter);
                 }
